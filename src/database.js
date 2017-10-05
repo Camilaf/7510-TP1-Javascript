@@ -78,7 +78,7 @@ var Database = function () {
         }));
         
         for (var i = 0; i < rule.obtainObjectives().length; i++) {
-            var objective = this.buildObjective(rule.obtainObjectives()[i], variablesMap); // que sea un new query?
+            var objective = this.buildObjective(rule.obtainObjectives()[i], variablesMap); 
             if (!this.hasFact(objective)) {
                 return false;
             }
