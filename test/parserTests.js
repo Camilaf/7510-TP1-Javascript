@@ -4,7 +4,6 @@ var assert = require('assert');
 
 var Parser = require('../src/parser');
 
-
 describe("Parser", function () {
 
     var parser = null;
@@ -318,20 +317,23 @@ describe("Parser", function () {
     describe('Parse Fact', function () {
 
         it('parseFact(varon(juan).)', function () {
-            expect(parser.parseFact('varon(juan).')).to.have.property('predicate');
-            expect(parser.parseFact('varon(juan).')).to.have.property('parameters');
-            expect(parser.parseFact('varon(juan).').predicate).to.equal('varon');
-            expect(parser.parseFact('varon(juan).').parameters).to.deep.equal(['juan']);
+            var result = parser.parseFact('varon(juan).');
+            expect(result).to.have.property('predicate');
+            expect(result).to.have.property('parameters');
+            expect(result.predicate).to.equal('varon');
+            expect(result.parameters).to.deep.equal(['juan']);
         });
         
         it('parseFact(padre_de(juan,pepe).)', function () {
-            expect(parser.parseFact('padre_de(juan,pepe).').predicate).to.equal('padre_de');
-            expect(parser.parseFact('padre_de(juan,pepe).').parameters).to.deep.equal(['juan', 'pepe']);
+            var result = parser.parseFact('padre_de(juan,pepe).');
+            expect(result.predicate).to.equal('padre_de');
+            expect(result.parameters).to.deep.equal(['juan', 'pepe']);
         });
         
         it('parseFact(cuatrillizos(bren,agus,cande,marti).)', function () {
-            expect(parser.parseFact('cuatrillizos(bren,agus,cande,marti).').predicate).to.equal('cuatrillizos');
-            expect(parser.parseFact('cuatrillizos(bren,agus,cande,marti).').parameters).to.deep.equal(['bren', 'agus', 'cande', 'marti']);
+            var result = parser.parseFact('cuatrillizos(bren,agus,cande,marti).');
+            expect(result.predicate).to.equal('cuatrillizos');
+            expect(result.parameters).to.deep.equal(['bren', 'agus', 'cande', 'marti']);
         });
 
     });
@@ -339,20 +341,23 @@ describe("Parser", function () {
     describe('Parse Query', function () {
  
         it('parseQuery(varon(juan))', function () {
-            expect(parser.parseQuery('varon(lean)')).to.have.property('predicate');
-            expect(parser.parseQuery('varon(lean)')).to.have.property('parameters');
-            expect(parser.parseQuery('varon(lean)').predicate).to.equal('varon');
-            expect(parser.parseQuery('varon(lean)').parameters).to.deep.equal(['lean']);
+            var result = parser.parseQuery('varon(lean)');
+            expect(result).to.have.property('predicate');
+            expect(result).to.have.property('parameters');
+            expect(result.predicate).to.equal('varon');
+            expect(result.parameters).to.deep.equal(['lean']);
         });
         
         it('parseQuery(primo(juan,emi))', function () {
-            expect(parser.parseQuery('primo(juan,emi)').predicate).to.equal('primo');
-            expect(parser.parseQuery('primo(juan,emi)').parameters).to.deep.equal(['juan', 'emi']);
+            var result = parser.parseQuery('primo(juan,emi)');
+            expect(result.predicate).to.equal('primo');
+            expect(result.parameters).to.deep.equal(['juan', 'emi']);
         });
         
         it('parseQuery(amigos(lean,emi,hect))', function () {
-            expect(parser.parseQuery('amigos(lean,emi,hect)').predicate).to.equal('amigos');
-            expect(parser.parseQuery('amigos(lean,emi,hect)').parameters).to.deep.equal(['lean', 'emi', 'hect']);
+            var result = parser.parseQuery('amigos(lean,emi,hect)');
+            expect(result.predicate).to.equal('amigos');
+            expect(result.parameters).to.deep.equal(['lean', 'emi', 'hect']);
         });
         
         it('parseQuery(varon())', function () {
@@ -397,57 +402,80 @@ describe("Parser", function () {
         
     });
     
+    describe('Parse Rule Objectives', function () {
+
+        it('parseRuleObjectives(hijo(X,Y):-varon(X),padre(Y,X).)', function () {
+            expect(parser.parseRuleObjectives('hijo(X,Y):-varon(X),padre(Y,X).')).to.deep.equal([{predicate: 'varon', parameters: ['X']}, {predicate: 'padre', parameters: ['Y', 'X']}]);
+        });
+        
+        it('parseRuleObjectives(subtract(X,Y,Z):-add(Y,Z,X).)', function () {
+            expect(parser.parseRuleObjectives('subtract(X,Y,Z):-add(Y,Z,X).')).to.deep.equal([{predicate: 'add', parameters: ['Y', 'Z', 'X']}]);
+        });
+        
+        it('parseRuleObjectives(amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).)', function () {
+            expect(parser.parseRuleObjectives('amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).')).to.deep.equal([{predicate: 'amigo', parameters: ['X', 'Y']}, {predicate: 'amigo', parameters: ['X', 'Z']}, {predicate: 'amigo', parameters: ['Y', 'X']}, {predicate: 'amigo', parameters: ['Y', 'Z']}, {predicate: 'amigo', parameters: ['Z', 'X']}, {predicate: 'amigo', parameters: ['Z', 'Y']}]);
+        });
+
+    });
+    
     describe('Parse Rule', function () {
 
         it('parseRule(hijo(X,Y):-varon(X),padre(Y,X).)', function () {
-            expect(parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).')).to.have.property('predicate');
-            expect(parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).')).to.have.property('variables');
-            expect(parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).')).to.have.property('objectives');
-            expect(parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).').predicate).to.equal('hijo');
-            expect(parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).').variables).to.deep.equal(['X', 'Y']);
-            expect(parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).').objectives).to.deep.equal(['varon(X)', 'padre(Y,X)']);
+            var result = parser.parseRule('hijo(X,Y):-varon(X),padre(Y,X).');
+            expect(result).to.have.property('predicate');
+            expect(result).to.have.property('variables');
+            expect(result).to.have.property('objectives');
+            expect(result.predicate).to.equal('hijo');
+            expect(result.variables).to.deep.equal(['X', 'Y']);
+            expect(result.objectives).to.deep.equal([{predicate: 'varon', parameters: ['X']}, {predicate: 'padre', parameters: ['Y', 'X']}]);
         });
         
         it('parseRule(subtract(X,Y,Z):-add(Y,Z,X).)', function () {
-            expect(parser.parseRule('subtract(X,Y,Z):-add(Y,Z,X).').predicate).to.equal('subtract');
-            expect(parser.parseRule('subtract(X,Y,Z):-add(Y,Z,X).').variables).to.deep.equal(['X', 'Y', 'Z']);
-            expect(parser.parseRule('subtract(X,Y,Z):-add(Y,Z,X).').objectives).to.deep.equal(['add(Y,Z,X)']);
+            var result = parser.parseRule('subtract(X,Y,Z):-add(Y,Z,X).');
+            expect(result.predicate).to.equal('subtract');
+            expect(result.variables).to.deep.equal(['X', 'Y', 'Z']);
+            expect(result.objectives).to.deep.equal([{predicate: 'add', parameters: ['Y', 'Z', 'X']}]);
         });
         
         it('parseRule(amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).)', function () {
-            expect(parser.parseRule('amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).').predicate).to.equal('amigos');
-            expect(parser.parseRule('amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).').variables).to.deep.equal(['X', 'Y', 'Z']);
-            expect(parser.parseRule('amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).').objectives).to.deep.equal(['amigo(X,Y)', 'amigo(X,Z)', 'amigo(Y,X)', 'amigo(Y,Z)', 'amigo(Z,X)', 'amigo(Z,Y)']);
+            var result = parser.parseRule('amigos(X,Y,Z):-amigo(X,Y),amigo(X,Z),amigo(Y,X),amigo(Y,Z),amigo(Z,X),amigo(Z,Y).');
+            expect(result.predicate).to.equal('amigos');
+            expect(result.variables).to.deep.equal(['X', 'Y', 'Z']);
+            expect(result.objectives).to.deep.equal([{predicate: 'amigo', parameters: ['X', 'Y']}, {predicate: 'amigo', parameters: ['X', 'Z']}, {predicate: 'amigo', parameters: ['Y', 'X']}, {predicate: 'amigo', parameters: ['Y', 'Z']}, {predicate: 'amigo', parameters: ['Z', 'X']}, {predicate: 'amigo', parameters: ['Z', 'Y']}]);
         });
     });
     
     describe('Parse Clause (fact or rule)', function () {
     
         it('parseClause(varon(juan).)', function () {
-            expect(parser.parseClause('varon(juan).')).to.have.property('predicate');
-            expect(parser.parseClause('varon(juan).')).to.have.property('parameters');
-            expect(parser.parseClause('varon(juan).').predicate).to.equal('varon');
-            expect(parser.parseClause('varon(juan).').parameters).to.deep.equal(['juan']);
+            var result = parser.parseClause('varon(juan).');
+            expect(result).to.have.property('predicate');
+            expect(result).to.have.property('parameters');
+            expect(result.predicate).to.equal('varon');
+            expect(result.parameters).to.deep.equal(['juan']);
         });
         
         it('parseClause(padre_de(juan, pepe).)', function () {
-            expect(parser.parseClause('padre_de(juan, pepe).').predicate).to.equal('padre_de');
-            expect(parser.parseClause('padre_de(juan, pepe).').parameters).to.deep.equal(['juan', 'pepe']);
+            var result = parser.parseClause('padre_de(juan, pepe).');
+            expect(result.predicate).to.equal('padre_de');
+            expect(result.parameters).to.deep.equal(['juan', 'pepe']);
         });
         
         it('parseClause(hijo(X, Y) :- varon(X), padre(Y, X).)', function () {
-            expect(parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).')).to.have.property('predicate');
-            expect(parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).')).to.have.property('variables');
-            expect(parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).')).to.have.property('objectives');
-            expect(parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).').predicate).to.equal('hijo');
-            expect(parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).').variables).to.deep.equal(['X', 'Y']);
-            expect(parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).').objectives).to.deep.equal(['varon(X)', 'padre(Y,X)']);
+            var result = parser.parseClause('hijo(X, Y) :- varon(X), padre(Y, X).');
+            expect(result).to.have.property('predicate');
+            expect(result).to.have.property('variables');
+            expect(result).to.have.property('objectives');
+            expect(result.predicate).to.equal('hijo');
+            expect(result.variables).to.deep.equal(['X', 'Y']);
+            expect(result.objectives).to.deep.equal([{predicate: 'varon', parameters: ['X']}, {predicate: 'padre', parameters: ['Y', 'X']}]);
         });
         
         it('parseClause(subtract(X,Y,Z) :- add(Y, Z, X).)', function () {
-            expect(parser.parseClause('subtract(X,Y,Z) :- add(Y, Z, X).').predicate).to.equal('subtract');
-            expect(parser.parseClause('subtract(X,Y,Z) :- add(Y, Z, X).').variables).to.deep.equal(['X', 'Y', 'Z']);
-            expect(parser.parseClause('subtract(X,Y,Z) :- add(Y, Z, X).').objectives).to.deep.equal(['add(Y,Z,X)']);
+            var result = parser.parseClause('subtract(X,Y,Z) :- add(Y, Z, X).');
+            expect(result.predicate).to.equal('subtract');
+            expect(result.variables).to.deep.equal(['X', 'Y', 'Z']);
+            expect(result.objectives).to.deep.equal([{predicate: 'add', parameters: ['Y', 'Z', 'X']}]);
         });
         
         it('parseClause((X,Y,Z).)', function () {
