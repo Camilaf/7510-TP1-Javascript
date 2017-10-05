@@ -49,7 +49,56 @@ var Database = function () {
         return false;
     }
     
+    this.buildObjective = function(objective, variablesMap) {
+        var instantiatedParameters = objective.parameters.map(function(parameter) {
+            var queryParameter = variablesMap.get(parameter);
+            if (queryParameter) {
+                return queryParameter;
+            } else {
+                return parameter;
+            }
+        });
+        
+        return {
+            predicate: objective.predicate,
+            parameters: instantiatedParameters
+        }
+    }
     
+    this.hasObjectives = function(rule, query) {
+        var ruleVariables = rule.obtainVariables();
+        var queryParameters = query.parameters;
+
+        if (ruleVariables.length != queryParameters.length) {
+            return false;
+        }
+        
+        var variablesMap = new Map (ruleVariables.map(function(variable, index) {
+            return [variable, queryParameters[index]]; 
+        }));
+        
+        for (var i = 0; i < rule.obtainObjectives().length; i++) {
+            var objective = this.buildObjective(rule.obtainObjectives()[i], variablesMap); // que sea un new query?
+            if (!this.hasFact(objective)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+	
+    this.hasRule = function(rule) {
+        var rulesListLength = rules.length;
+
+        for (var i = 0; i < rulesListLength; i++) {
+            var dbRule = rules[i];
+            if ((samePredicate(dbRule, rule) && (this.hasObjectives(dbRule, rule)))) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }
 
 module.exports = Database;
