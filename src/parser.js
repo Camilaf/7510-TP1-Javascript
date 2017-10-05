@@ -66,6 +66,22 @@ var Parser = function () {
         return replaceObjectiveSeparator(objectiveString).split(specialObjectiveSeparator);
     }
     
+    this.parseRuleObjectives = function(rule) {
+        var parsedObjectivesList = [];
+        var objectivesList = this.obtainRuleObjectives(rule);
+        var objectivesListLength = objectivesList.length;
+
+        for (var i = 0; i < objectivesListLength; i++) {
+    	    var objective = objectivesList[i];
+    	    parsedObjectivesList[i] = {
+	        predicate: this.obtainClausePredicate(objective),
+	    	parameters: this.obtainQueryParameters(objective)
+	    };
+        }
+    	
+        return parsedObjectivesList;
+    }
+    
     this.parseQuery = function(query) {
     	var cleanQuery = removeAllSpaces(query);
     	if (this.validQuery(cleanQuery)) {
@@ -89,7 +105,7 @@ var Parser = function () {
         return {
             predicate: this.obtainClausePredicate(rule),
     	    variables: this.obtainRuleVariables(rule),
-    	    objectives: this.obtainRuleObjectives(rule)
+    	    objectives: this.parseRuleObjectives(rule)
     	};
     }
 
