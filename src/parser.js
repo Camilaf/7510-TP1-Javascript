@@ -17,7 +17,7 @@ var Parser = function () {
 
     var ruleObjectivesRegex = /^.*\(.*\)\:-(.*)\.$/;
     
-    var removeAllSpaces = function(clause) {
+    this.removeAllSpaces = function(clause) {
         return clause.replace(/\ /g, "");
     }
 
@@ -83,7 +83,7 @@ var Parser = function () {
     }
     
     this.parseQuery = function(query) {
-    	var cleanQuery = removeAllSpaces(query);
+    	var cleanQuery = this.removeAllSpaces(query);
     	if (this.validQuery(cleanQuery)) {
     	    return {
     	        predicate: this.obtainClausePredicate(cleanQuery),
@@ -107,20 +107,6 @@ var Parser = function () {
     	    variables: this.obtainRuleVariables(rule),
     	    objectives: this.parseRuleObjectives(rule)
     	};
-    }
-
-    this.parseClause = function(clause) {
-        var cleanClause = removeAllSpaces(clause);
-        
-        if (this.isRule(cleanClause)) {
-            return this.parseRule(cleanClause);
-        }
-        
-        if (this.isFact(cleanClause)) {
-            return this.parseFact(cleanClause);
-        }
-        
-        throw new Error('Invalid entry in database: ' + clause);
     }
 
 }
