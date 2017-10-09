@@ -1,10 +1,5 @@
 var Parser = function () {
 
-   // var parameterSeparator = ",";
-    //var objectiveSeparatorIdentifier = /\),/g;
-    //var specialObjectiveSeparator = ";";
-    //var specialObjectiveSeparatorIdentifier = ")" + specialObjectiveSeparator;
-    
     this.removeAllSpaces = function(clause) {
         return clause.replace(/\ /g, "");
     }
