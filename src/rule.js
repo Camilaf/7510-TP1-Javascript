@@ -17,6 +17,12 @@ var Rule = function (predicate, variables, objectives) {
     
     this.samePredicate = function(query) {
         return predicate === query.predicate;
+    }
+    
+    this.mapVariables = function(queryParameters) {
+        return new Map (variables.map(function(variable, index) {
+            return [variable, queryParameters[index]]; 
+        }));
     }    
 }
 

@@ -1,64 +1,54 @@
 var Fact = require('./fact');
 var Rule = require('./rule');
+var Objective = require('./objective');
 
 var Database = function () {
     var rules = [];
     var facts = [];
-	
-    this.addRule = function(parsedRule) {
-        var rule = new Rule(parsedRule.predicate, parsedRule.variables, parsedRule.objectives);
-        rules.push(rule);
-    }
-	
+    
     this.addFact = function(parsedFact) {
         var fact = new Fact(parsedFact.predicate, parsedFact.parameters);
         facts.push(fact);
     }
     
+    this.addRule = function(parsedRule) {
+        var objectives = parsedRule.objectives.map(function(objective) {
+            return new Objective(objective.predicate, objective.parameters);
+        });
+        
+        var rule = new Rule(parsedRule.predicate, parsedRule.variables, objectives);
+        rules.push(rule);
+    }
+    
     this.hasFact = function(fact) {
-        var factsListLength = facts.length;
+        var numberOfFacts = facts.length;
 
-        for (var i = 0; i < factsListLength; i++) {
+        for (var i = 0; i < numberOfFacts; i++) {
             var dbFact = facts[i];
-            if (dbFact.samePredicate(fact) && dbFact.sameParameters(fact)) {
+            if (dbFact.equalTo(fact)) {
                 return true;
             }
         }
-	
         return false;
     }
     
-    var buildObjective = function(objective, variablesMap) {
-        var instantiatedParameters = objective.parameters.map(function(parameter) {
-            var queryParameter = variablesMap.get(parameter);
-            if (queryParameter) {
-                return queryParameter;
-            } else {
-                return parameter;
-            }
-        });
-        
-        return {
-            predicate: objective.predicate,
-            parameters: instantiatedParameters
-        }
-    }
-    
     this.hasObjectives = function(rule, query) {
-        var ruleVariables = rule.obtainVariables();
-        var queryParameters = query.parameters;
+        var numberOfRuleVariables = rule.obtainVariables().length;
+        var numberOfQueryParameters = query.parameters.length;
+        var numberOfRuleObjectives = rule.obtainObjectives().length;
+        var ruleObjectives = rule.obtainObjectives();
 
-        if (ruleVariables.length != queryParameters.length) {
+        if (numberOfRuleVariables != numberOfQueryParameters) {
             return false;
         }
         
-        var variablesMap = new Map (ruleVariables.map(function(variable, index) {
-            return [variable, queryParameters[index]]; 
-        }));
+        var variablesMap = rule.mapVariables(query.parameters);
         
-        for (var i = 0; i < rule.obtainObjectives().length; i++) {
-            var objective = buildObjective(rule.obtainObjectives()[i], variablesMap); 
-            if (!this.hasFact(objective)) {
+        for (var i = 0; i < numberOfRuleObjectives; i++) { 
+            var objective = ruleObjectives[i];
+            var newFact = objective.build(variablesMap);
+            
+            if (!this.hasFact(newFact)) {
                 return false;
             }
         }
@@ -67,9 +57,9 @@ var Database = function () {
     }
 	
     this.hasRule = function(rule) {
-        var rulesListLength = rules.length;
+        var numberOfRules = rules.length;
 
-        for (var i = 0; i < rulesListLength; i++) {
+        for (var i = 0; i < numberOfRules; i++) {
             var dbRule = rules[i];
             if (dbRule.samePredicate(rule) && this.hasObjectives(dbRule, rule)) {
                 return true;

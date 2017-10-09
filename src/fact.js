@@ -26,6 +26,10 @@ var Fact = function (predicate, parameters) {
         
         return true;
     }
+    
+    this.equalTo = function(query) {
+        return this.samePredicate(query) && this.sameParameters(query);
+    }
 }
 
 module.exports = Fact;
