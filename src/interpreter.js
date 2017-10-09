@@ -7,6 +7,8 @@ var Interpreter = function () {
     var parser = new Parser();
     var validator = new Validator();
     
+    /* Receives a list of clauses and adds them to the database. If one clause 
+     * can't be parsed, throws an Error. */
     this.parseDB = function (databaseList) {
         var numberOfClauses = databaseList.length;
         
@@ -27,7 +29,10 @@ var Interpreter = function () {
             }
         }
     }
-
+    
+    /* Receives a string 'query' and returns true if the rules and facts
+     * in the database imply query, false if not. If the query can't be
+     * parsed, throws an Error. */
     this.checkQuery = function (query) {
         var cleanQuery = parser.removeAllSpaces(query);
         
