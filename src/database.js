@@ -15,33 +15,12 @@ var Database = function () {
         facts.push(fact);
     }
     
-    var samePredicate = function(clause, query) {
-        return clause.obtainPredicate() === query.predicate;
-    }
-    
-    var sameParameters = function(clause, query) {
-        var clauseParameters = clause.obtainParameters();
-        var queryParameters = query.parameters;
-        
-        if (clauseParameters.length != queryParameters.length) {
-            return false;
-        }
-        
-        var parametersLength = clauseParameters.length;
-        for (var i = 0; i < parametersLength; i++) {
-            if (clauseParameters[i] != queryParameters[i])
-                return false;
-        }
-        
-        return true;
-    }
-    
     this.hasFact = function(fact) {
         var factsListLength = facts.length;
 
         for (var i = 0; i < factsListLength; i++) {
             var dbFact = facts[i];
-            if (samePredicate(dbFact, fact) && sameParameters(dbFact, fact)) {
+            if (dbFact.samePredicate(fact) && dbFact.sameParameters(fact)) {
                 return true;
             }
         }
@@ -49,7 +28,7 @@ var Database = function () {
         return false;
     }
     
-    this.buildObjective = function(objective, variablesMap) {
+    var buildObjective = function(objective, variablesMap) {
         var instantiatedParameters = objective.parameters.map(function(parameter) {
             var queryParameter = variablesMap.get(parameter);
             if (queryParameter) {
@@ -78,7 +57,7 @@ var Database = function () {
         }));
         
         for (var i = 0; i < rule.obtainObjectives().length; i++) {
-            var objective = this.buildObjective(rule.obtainObjectives()[i], variablesMap); 
+            var objective = buildObjective(rule.obtainObjectives()[i], variablesMap); 
             if (!this.hasFact(objective)) {
                 return false;
             }
@@ -92,7 +71,7 @@ var Database = function () {
 
         for (var i = 0; i < rulesListLength; i++) {
             var dbRule = rules[i];
-            if ((samePredicate(dbRule, rule) && (this.hasObjectives(dbRule, rule)))) {
+            if (dbRule.samePredicate(rule) && this.hasObjectives(dbRule, rule)) {
                 return true;
             }
         }

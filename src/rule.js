@@ -14,6 +14,10 @@ var Rule = function (predicate, variables, objectives) {
     this.obtainObjectives = function() {
         return objectives;
     }
+    
+    this.samePredicate = function(query) {
+        return predicate === query.predicate;
+    }    
 }
 
 module.exports = Rule;
