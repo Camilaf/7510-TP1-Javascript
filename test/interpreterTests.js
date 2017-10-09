@@ -446,6 +446,46 @@ describe("Interpreter: number database tests", function () {
         it('subtract(two, one, one) should be true', function () {
             assert(interpreter.checkQuery('subtract(two, one, one)') === true);
         });
+        
+        it('checkQuery(varon())', function () {
+            expect(() => { interpreter.checkQuery('varon()') }).to.throw('Invalid query: varon()');
+        });
+        
+        it('checkQuery(varon(juan,))', function () {
+            expect(() => { interpreter.checkQuery('varon(juan,)') }).to.throw('Invalid query: varon(juan,)');
+        });
+        
+        it('checkQuery(varon(, pepe))', function () {
+            expect(() => { interpreter.checkQuery('varon(, pepe)') }).to.throw('Invalid query: varon(, pepe)');
+        });
+        
+        it('checkQuery((nico))', function () {
+            expect(() => { interpreter.checkQuery('(nico)') }).to.throw('Invalid query: (nico)');
+        });
+        
+        it('checkQuery(varon(X))', function () {
+            expect(() => { interpreter.checkQuery('varon(X)') }).to.throw('Invalid query: varon(X)');
+        });
+        
+        it('checkQuery(varon))', function () {
+            expect(() => { interpreter.checkQuery('varon)') }).to.throw('Invalid query: varon)');
+        });
+        
+        it('checkQuery(varon)', function () {
+            expect(() => { interpreter.checkQuery('varon') }).to.throw('Invalid query: varon');
+        });
+        
+        it('checkQuery(Varon(lucas))', function () {
+            expect(() => { interpreter.checkQuery('Varon(lucas)') }).to.throw('Invalid query: Varon(lucas)');
+        });
+        
+        it('checkQuery(_(lucas))', function () {
+            expect(() => { interpreter.checkQuery('_(lucas)') }).to.throw('Invalid query: _(lucas)');
+        });
+        
+        it('checkQuery(varon(,))', function () {
+            expect(() => { interpreter.checkQuery('varon(,)') }).to.throw('Invalid query: varon(,)');
+        });
 
     });
 

@@ -1,39 +1,16 @@
 var Parser = function () {
 
-    var parameterSeparator = ",";
-    var objectiveSeparatorIdentifier = /\),/g;
-    var specialObjectiveSeparator = ";";
-    var specialObjectiveSeparatorIdentifier = ")" + specialObjectiveSeparator;
-
-    var queryRegex = /^([a-z]+[a-z_]*)\(([a-z0-9]+)(,[a-z0-9]+)*\)$/;
-    var factRegex = /^([a-z]+[a-z_]*)\(([a-z0-9]+)(,[a-z0-9]+)*\)\.$/;
-    var ruleRegex = /^([a-z]+[a-z_]*)\(([A-Z]+)(,[A-Z]+)*\):-([a-z]+[a-z-]*)\((\w+)(,\w+)*\)(,([a-z]+[a-z-]*)\((\w+)(,\w+)*\))*\.$/;
-    
-    var clausePredicateRegex = /^[a-z]+[a-z_]*/;
-
-    var queryParametersRegex = /^.*\((.*)\)$/;
-    var factParametersRegex = /^.*\((.*)\)\.$/;
-    var ruleVariablesRegex = /^.*\((.*)\)\:-.*$/;
-
-    var ruleObjectivesRegex = /^.*\(.*\)\:-(.*)\.$/;
+   // var parameterSeparator = ",";
+    //var objectiveSeparatorIdentifier = /\),/g;
+    //var specialObjectiveSeparator = ";";
+    //var specialObjectiveSeparatorIdentifier = ")" + specialObjectiveSeparator;
     
     this.removeAllSpaces = function(clause) {
         return clause.replace(/\ /g, "");
     }
-
-    this.isRule = function(clause) {
-        return ruleRegex.test(clause);
-    }
-    
-    this.isFact = function(clause) {
-        return factRegex.test(clause);
-    }
-    
-    this.validQuery = function(query) {
-        return queryRegex.test(query);
-    }
     
     this.obtainClausePredicate = function(clause) {
+        var clausePredicateRegex = /^[a-z]+[a-z_]*/;
         var predicateIndex = 0;
         return clausePredicateRegex.exec(clause)[predicateIndex];
     }
@@ -41,57 +18,30 @@ var Parser = function () {
     var obtainClauseParameters = function(clause, clauseParametersRegex) {
         var parametersIndex = 1;
         var parameterString = clauseParametersRegex.exec(clause)[parametersIndex];
+        var parameterSeparator = ",";
         return parameterString.split(parameterSeparator);
     }
     
     this.obtainFactParameters = function(fact) {
+        var factParametersRegex = /^.*\((.*)\)\.$/;
         return obtainClauseParameters(fact, factParametersRegex);
     }
     
     this.obtainQueryParameters = function(query) {
+        var queryParametersRegex = /^.*\((.*)\)$/;
         return obtainClauseParameters(query, queryParametersRegex);
     }
     
     this.obtainRuleVariables = function(rule) {
+        var ruleVariablesRegex = /^.*\((.*)\)\:-.*$/;
         return obtainClauseParameters(rule, ruleVariablesRegex);
     }
     
-    var replaceObjectiveSeparator = function(objectives) {
-        return objectives.replace(objectiveSeparatorIdentifier, specialObjectiveSeparatorIdentifier);
-    }
-    
-    this.obtainRuleObjectives = function(rule) {
-        var objectivesIndex = 1;
-        var objectiveString = ruleObjectivesRegex.exec(rule)[objectivesIndex];
-        return replaceObjectiveSeparator(objectiveString).split(specialObjectiveSeparator);
-    }
-    
-    this.parseRuleObjectives = function(rule) {
-        var parsedObjectivesList = [];
-        var objectivesList = this.obtainRuleObjectives(rule);
-        var objectivesListLength = objectivesList.length;
-
-        for (var i = 0; i < objectivesListLength; i++) {
-    	    var objective = objectivesList[i];
-    	    parsedObjectivesList[i] = {
-	        predicate: this.obtainClausePredicate(objective),
-	    	parameters: this.obtainQueryParameters(objective)
-	    };
-        }
-    	
-        return parsedObjectivesList;
-    }
-    
     this.parseQuery = function(query) {
-    	var cleanQuery = this.removeAllSpaces(query);
-    	if (this.validQuery(cleanQuery)) {
-    	    return {
-    	        predicate: this.obtainClausePredicate(cleanQuery),
-    	        parameters: this.obtainQueryParameters(cleanQuery)
-    	    };
-    	}
-    	
-    	throw new Error('Invalid query: ' + query);
+    	return {
+    	    predicate: this.obtainClausePredicate(query),
+    	    parameters: this.obtainQueryParameters(query)
+    	};
     }
     
     this.parseFact = function(fact) {
@@ -99,6 +49,33 @@ var Parser = function () {
     	    predicate: this.obtainClausePredicate(fact),
     	    parameters: this.obtainFactParameters(fact)
     	};
+    }
+    
+    var replaceObjectiveSeparator = function(objectives) {
+        var objectiveSeparatorIdentifier = /\),/g;
+        var specialObjectiveSeparatorIdentifier = ");";
+        return objectives.replace(objectiveSeparatorIdentifier, specialObjectiveSeparatorIdentifier);
+    }
+    
+    this.obtainRuleObjectives = function(rule) {
+        var ruleObjectivesRegex = /^.*\(.*\)\:-(.*)\.$/;
+        var objectivesIndex = 1;
+        var objectiveString = ruleObjectivesRegex.exec(rule)[objectivesIndex];
+        var specialObjectiveSeparator = ";";
+        return replaceObjectiveSeparator(objectiveString).split(specialObjectiveSeparator);
+    }
+    
+    this.parseRuleObjectives = function(rule) {
+        var parsedObjectivesList = [];
+        var objectivesList = this.obtainRuleObjectives(rule);
+        var numberOfObjectives = objectivesList.length;
+
+        for (var i = 0; i < numberOfObjectives; i++) {
+    	    var objective = objectivesList[i];
+    	    parsedObjectivesList[i] = this.parseQuery(objective);
+        }
+    	
+        return parsedObjectivesList;
     }
     
     this.parseRule = function(rule) {
